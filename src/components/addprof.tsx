@@ -1,5 +1,12 @@
 import { createClient } from "@/lib/supabase/client";
 
+
+interface sendData {
+    nom : string;
+    specialite : string;
+    portrait : string;
+}
+
 const AddProf = () => {
     return (    
 
@@ -9,15 +16,16 @@ const AddProf = () => {
                 const nom = formData.get('nom') as string;
                 const specialite = formData.get('specialite') as string;
                 const file = formData.get('portrait') as File;
+                
 
                 const fileExt = file.name.split('.').pop();
                 const fileName = `${Math.random()}-${Date.now()}.${fileExt}`; //${Math.random()}-
-                const filePath = `image-prof/${fileName}`;
+                const filePath = `image_prof/${fileName}`;
 
                 console.log('Uploading file to path:', filePath);
 
                 const { error: uploadError } = await supabase.storage
-                    .from('image-prof') // Nom de votre bucket
+                    .from('image_prof') // Nom de votre bucket
                     .upload(filePath, file);
                 if (uploadError) {
                     console.error('Error uploading portrait:', uploadError);
@@ -25,13 +33,19 @@ const AddProf = () => {
                 }
 
                 const { data: urlData } = supabase.storage
-                    .from('image-prof') // Nom de votre bucket
+                    .from('image_prof') // Nom de votre bucket
                     .getPublicUrl(filePath);
 
                 const portrait = urlData.publicUrl;
+
+                const profData: sendData = {
+                    nom : nom,
+                    specialite : specialite,
+                    portrait : portrait 
+                };
                 
                 if (nom && specialite) {
-                    await supabase.from('profs').insert([{ nom, specialite, portrait}]);
+                    await supabase.from('profs').insert([profData]);
                 }
             }}>
                 <div className="m-2">
